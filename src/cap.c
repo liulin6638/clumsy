@@ -150,6 +150,7 @@ static short capProcess(PacketNode *head, PacketNode *tail) {
             if (sendPacket == FALSE)
                 capLastTick = curTick;
             sendPacket = TRUE;
+            LOG("sending out packets of %d bytes size %d cap %d", pac->packetLen, bufSize, bytesCapped);
             totalBytes += pac->packetLen;
             bytesCapped -= pac->packetLen;
             --bufSize;
@@ -158,7 +159,6 @@ static short capProcess(PacketNode *head, PacketNode *tail) {
             break;
         }
 
-        LOG("sending out packets of %d bytes", pac->packetLen);
     }
 
     // process live packets
