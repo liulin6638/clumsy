@@ -8,7 +8,7 @@
 #define MAX_PACKETSIZE 0xFFFF
 #define READ_TIME_PER_STEP 3
 // FIXME does this need to be larger then the time to process the list?
-#define CLOCK_WAITMS 40
+#define CLOCK_WAITMS 20
 #define QUEUE_LEN 2 << 10
 #define QUEUE_TIME 2 << 9 
 

@@ -10,13 +10,14 @@
 // ! the order decides which module get processed first
 Module* modules[MODULE_CNT] = {
     &lagModule,
+    &jitterModule,
     &dropModule,
     &throttleModule,
     &dupModule,
     &oodModule,
     &tamperModule,
     &resetModule,
-    //&capModule
+    &capModule
 };
 
 volatile short sendState = SEND_STATUS_NONE;
@@ -291,6 +292,7 @@ void showStatus(const char *line) {
 // if this happens pop out message box and exit
 static BOOL check32RunningOn64(HWND hWnd) {
     BOOL is64ret;
+    return FALSE;
     // consider IsWow64Process return value
     if (IsWow64Process(GetCurrentProcess(), &is64ret) && is64ret) {
         MessageBox(hWnd, (LPCSTR)"You're running 32bit clumsy on 64bit Windows, which wouldn't work. Please use the 64bit clumsy version.",

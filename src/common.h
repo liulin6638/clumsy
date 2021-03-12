@@ -8,7 +8,7 @@
 #define MSG_BUFSIZE 512
 #define FILTER_BUFSIZE 1024
 #define NAME_SIZE 16
-#define MODULE_CNT 7
+#define MODULE_CNT 9
 #define ICON_UPDATE_MS 200
 
 #define CONTROLS_HANDLE "__CONTROLS_HANDLE"
@@ -58,13 +58,13 @@
 #endif
 
 
-
+#define _DEBUG
 #ifdef _DEBUG
 #define ABORT() assert(0)
 #ifdef __MINGW32__
 #define LOG(fmt, ...) (printf("%s: " fmt "\n", __FUNCTION__, ##__VA_ARGS__))
 #else
-#define LOG(fmt, ...) (printf(__FUNCTION__ ": " fmt "\n", ##__VA_ARGS__))
+#define LOG(fmt, ...) (printf(__FUNCTION__ " %llu : " fmt "\n", timeGetTime(),##__VA_ARGS__))
 #endif
 
 // check for assert
@@ -126,6 +126,7 @@ typedef struct {
 } Module;
 
 extern Module lagModule;
+extern Module jitterModule;
 extern Module dropModule;
 extern Module throttleModule;
 extern Module oodModule;
