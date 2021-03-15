@@ -94,7 +94,7 @@ static short capProcess(PacketNode *head, PacketNode *tail) {
     PacketNode *pac, *pacTmp, *oldLast;
     DWORD curTick = timeGetTime();
     DWORD deltaTick = curTick - capLastTick;
-    int bytesCapped = (int)(deltaTick * 0.001 * kps * FIXED_EPSILON * 1024 * 1024);
+    int bytesCapped = (int)(deltaTick * 0.001 * kps * FIXED_EPSILON * 1024 * 1024 / 8);
     static int totalBytes;
     static DWORD lastLogTick = 0;
     if (curTick > lastLogTick + 1000) {
@@ -150,7 +150,7 @@ static short capProcess(PacketNode *head, PacketNode *tail) {
             if (sendPacket == FALSE)
                 capLastTick = curTick;
             sendPacket = TRUE;
-            LOG("sending out packets of %d bytes size %d cap %d", pac->packetLen, bufSize, bytesCapped);
+            LOG("sending out packets of %d bytes size %d cap %d lastdiff %d", pac->packetLen, bufSize, bytesCapped, deltaTick);
             totalBytes += pac->packetLen;
             bytesCapped -= pac->packetLen;
             --bufSize;

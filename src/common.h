@@ -58,7 +58,6 @@
 #endif
 
 
-#define _DEBUG
 #ifdef _DEBUG
 #define ABORT() assert(0)
 #ifdef __MINGW32__
