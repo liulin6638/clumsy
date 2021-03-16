@@ -8,7 +8,7 @@
 #define MAX_PACKETSIZE 0xFFFF
 #define READ_TIME_PER_STEP 3
 // FIXME does this need to be larger then the time to process the list?
-#define CLOCK_WAITMS 20
+#define CLOCK_WAITMS 5
 #define QUEUE_LEN 2 << 10
 #define QUEUE_TIME 2 << 9 
 
@@ -74,7 +74,7 @@ void dumpPacket(char *buf, int len, PWINDIVERT_ADDRESS paddr) {
     }
 }
 #else
-#define dumpPacket(x, y, z)
+void dumpPacket(char* buf, int len, PWINDIVERT_ADDRESS paddr) {}
 #endif
 
 int divertStart(const char *filter, char buf[]) {
