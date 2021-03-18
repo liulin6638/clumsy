@@ -103,9 +103,10 @@ static short lagProcess(PacketNode *head, PacketNode *tail) {
         if (currentTime > pac->timestamp + lagTime) {
             insertAfter(popNode(bufTail->prev), head); // sending queue is already empty by now
             --bufSize;
-            LOG("Send lagged packets.");
-        } else {
-            LOG("Sent some lagged packets, still have %d in buf", bufSize);
+            LOG("Send lagged packets. %p", pac);
+        }
+        else {
+            //LOG("Sent some lagged packets, still have %d in buf", bufSize);
             break;
         }
     }

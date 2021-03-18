@@ -90,7 +90,7 @@ static short jitterProcess(PacketNode* head, PacketNode* tail) {
     // pick up all packets and fill in the current time
     while (bufSize < KEEP_AT_MOST && pac != head) {
         if (checkDirection(pac->addr.Direction, lagInbound, lagOutbound)) {
-            int jitter = rand() % lagTime;
+            int jitter = lagTime ? (rand() % lagTime) : 0;
             insertAfter(popNode(pac), bufHead)->timestamp = timeGetTime() + jitter;
             LOG("Jiiter %p %d", pac, jitter);
             ++bufSize;
@@ -101,17 +101,19 @@ static short jitterProcess(PacketNode* head, PacketNode* tail) {
         }
     }
 
-    // try sending overdue packets from buffer tail
-    while (!isBufEmpty()) {
-        PacketNode* pac = bufTail->prev;
+    pac = bufTail->prev;
+    while (!isBufEmpty() && pac != bufHead) {
         if (currentTime > pac->timestamp) {
-            insertAfter(popNode(bufTail->prev), head); // sending queue is already empty by now
-            --bufSize;
+            PacketNode* temp = pac->prev;
+            insertAfter(popNode(pac), head); // sending queue is already empty by now
             LOG("Send lagged packets. %p", pac);
+            pac = temp;
+            --bufSize;
         }
         else {
-            LOG("Sent some lagged packets, still have %d in buf", bufSize);
-            break;
+            //LOG("Sent some lagged packets, still have %d in buf  %p", bufSize, pac);
+            pac = pac->prev;
+            continue;
         }
     }
 
