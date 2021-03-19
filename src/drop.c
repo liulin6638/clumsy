@@ -5,15 +5,18 @@
 #include "common.h"
 #define NAME "drop"
 
-static Ihandle *inboundCheckbox, *outboundCheckbox, *chanceInput;
+static Ihandle* dropTypeCheckbox, * inboundCheckbox, * outboundCheckbox, * chanceInput;
 
 static volatile short dropEnabled = 0,
-    dropInbound = 1, dropOutbound = 1,
-    chance = 1000; // [0-10000]
+randomDrop = 1,
+dropInbound = 1, dropOutbound = 1,
+chance = 1000; // [0-10000]
+static int randomStatNum = 0, randomDropStatNum = 0;
 
 
 static Ihandle* dropSetupUI() {
     Ihandle *dropControlsBox = IupHbox(
+        dropTypeCheckbox = IupToggle("Random Drop", NULL),
         inboundCheckbox = IupToggle("Inbound", NULL),
         outboundCheckbox = IupToggle("Outbound", NULL),
         IupLabel("Chance(%):"),
@@ -30,7 +33,11 @@ static Ihandle* dropSetupUI() {
     IupSetCallback(outboundCheckbox, "ACTION", (Icallback)uiSyncToggle);
     IupSetAttribute(outboundCheckbox, SYNCED_VALUE, (char*)&dropOutbound);
 
+    IupSetCallback(dropTypeCheckbox, "ACTION", (Icallback)uiSyncToggle);
+    IupSetAttribute(dropTypeCheckbox, SYNCED_VALUE, (char*)&randomDrop);
+
     // enable by default to avoid confusing
+    IupSetAttribute(dropTypeCheckbox, "VALUE", "ON");
     IupSetAttribute(inboundCheckbox, "VALUE", "ON");
     IupSetAttribute(outboundCheckbox, "VALUE", "ON");
 
@@ -53,15 +60,36 @@ static void dropCloseDown(PacketNode *head, PacketNode *tail) {
     LOG("drop disabled");
 }
 
+
+static short dropCalcChance(short chance,short randomDrop) {
+    // notice that here we made a copy of chance, so even though it's volatile it is still ok
+    if (randomDrop)
+        return (chance == 10000) || ((rand() % 10000) < chance);
+    {
+        short ret = FALSE;
+        randomStatNum++;
+        if (chance / 10 > randomDropStatNum) {
+            printf("Drop packet %d  %d  %d\n", randomStatNum, randomDropStatNum, chance);
+            randomDropStatNum++;
+            ret = TRUE;
+        }
+        if (randomStatNum%1000 == 0){
+            randomDropStatNum = 0;
+        }
+        return ret;
+    }
+
+}
+
 static short dropProcess(PacketNode *head, PacketNode* tail) {
     int dropped = 0;
     while (head->next != tail) {
         PacketNode *pac = head->next;
         // chance in range of [0, 10000]
         if (checkDirection(pac->addr.Direction, dropInbound, dropOutbound)
-            && calcChance(chance)) {
-            LOG("dropped with chance %.1f%%, direction %s",
-                chance/100.0, BOUND_TEXT(pac->addr.Direction));
+            && dropCalcChance(chance,randomDrop)) {
+            LOG("dropped with chance %.1f%%, direction %s type:%d",
+                chance / 100.0, BOUND_TEXT(pac->addr.Direction), randomDrop);
             freeNode(popNode(pac));
             ++dropped;
         } else {
