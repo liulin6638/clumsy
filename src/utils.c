@@ -171,3 +171,36 @@ BOOL parseArgs(int argc, char* argv[]) {
 
     return 1;
 }
+
+
+
+void UpdateProcessSpeed(struct ProcessSpeedStat* stat, size_t size,BOOL is_out) {
+    DWORD curTick = timeGetTime();
+    stat->process_size += size;
+    stat->process_num++;
+    if (is_out) {
+        stat->out_process_size += size;
+    }
+    else {
+        stat->in_process_size += size;
+    }
+
+    if (curTick > stat->log_ms + 1000) {
+        char* speedUnit = "KB/s";
+        float speedRate = stat->process_size / 1024.0;
+        float inSpeedRate = stat->in_process_size / 1024.0;
+        float outSpeedRate = stat->out_process_size / 1024.0;
+        if (stat->process_size > 1024 * 1024) {
+            speedUnit = "MB/s";
+            speedRate = stat->process_size / (1024.0 * 1024.0);
+            inSpeedRate = stat->in_process_size / (1024.0 * 1024.0);
+            outSpeedRate = stat->out_process_size / (1024.0 * 1024.0);
+        }
+        printf("[%s]Read Length %d %.2f %s  [In:%.2f %s][Out:%.2f %s]\r\n", stat->stat_info, stat->process_num, speedRate, speedUnit, inSpeedRate, speedUnit, outSpeedRate, speedUnit);
+        stat->process_size = 0;
+        stat->out_process_size = 0;
+        stat->in_process_size = 0;
+        stat->process_num = 0;
+        stat->log_ms = curTick;
+    }
+}

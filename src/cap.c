@@ -3,7 +3,7 @@
 #include "iup.h"
 #include "common.h"
 #define NAME "cap"
-#define CAP_MIN "0.1"
+#define CAP_MIN "0.01"
 #define CAP_MAX "32.0" // TODO CAP_MAX actually can't be larger than 2**15...
 #define KEEP_AT_MOST 5000
 
@@ -98,7 +98,7 @@ static short capProcess(PacketNode *head, PacketNode *tail) {
     static int totalBytes;
     static DWORD lastLogTick = 0;
     if (curTick > lastLogTick + 1000) {
-        LOG("Max Speed %.2f Mb/s Process Speed %.2f Mb/s", kps * FIXED_EPSILON, totalBytes * 8000.0 / ((curTick - lastLogTick)*1024*1024));
+        printf("Max Speed %.2f Mb/s Process Speed %.2f Mb/s\r\n", kps * FIXED_EPSILON, totalBytes * 8000.0 / ((curTick - lastLogTick)*1024*1024));
         totalBytes = 0;
         lastLogTick = curTick;
     }
@@ -129,9 +129,11 @@ static short capProcess(PacketNode *head, PacketNode *tail) {
             while (pac != head)
             {
                 pacTmp = pac->prev;
-                freeNode(pac);
+                if (checkDirection(pac->addr.Direction, capInbound, capOutbound)) {
+                    freeNode(popNode(pac));
+                    dropCnt++;
+                }
                 pac = pacTmp;
-                dropCnt++;
             }
             LOG("! hitting cap max, dropping %d packet", dropCnt);
         }

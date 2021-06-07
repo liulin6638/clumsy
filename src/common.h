@@ -186,3 +186,14 @@ extern BOOL parameterized;
 void setFromParameter(Ihandle *ih, const char *field, const char *key);
 BOOL parseArgs(int argc, char* argv[]);
 
+
+struct ProcessSpeedStat {
+    char* stat_info;
+    size_t process_num;
+    size_t process_size;
+    size_t in_process_size;
+    size_t out_process_size;
+    DWORD log_ms;
+};
+
+void UpdateProcessSpeed(struct ProcessSpeedStat* stat,size_t size, BOOL is_out);

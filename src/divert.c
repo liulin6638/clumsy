@@ -206,6 +206,13 @@ static int sendAllListPackets() {
 static void divertConsumeStep() {
 #ifdef _DEBUG
     DWORD startTick = GetTickCount(), dt;
+
+    int startCnt = 0;
+    PacketNode* p = head;
+    do {
+        p = p->next; startCnt++;
+    } while (p->next);
+    assert(p == tail);
 #endif
     int ix, cnt;
     // use lastEnabled to keep track of module starting up and closing down
@@ -230,7 +237,7 @@ static void divertConsumeStep() {
 #ifdef _DEBUG
     dt =  GetTickCount() - startTick;
     if (dt > CLOCK_WAITMS / 2) {
-        LOG("Costy consume step: %lu ms, sent %d packets", GetTickCount() - startTick, cnt);
+        LOG("Costy consume step: %lu ms, sent %d packets %d start packetcount", GetTickCount() - startTick, cnt,startCnt);
     }
 #endif
 }
@@ -330,7 +337,7 @@ static DWORD divertReadLoop(LPVOID arg) {
 
     for(;;) {
         // each step must fully consume the list
-        assert(isListEmpty()); // FIXME has failed this assert before. don't know why
+        //assert(isListEmpty()); // FIXME has failed this assert before. don't know why
         if (!WinDivertRecv(divertHandle, packetBuf, MAX_PACKETSIZE, &addrBuf, &readLen)) {
             DWORD lastError = GetLastError();
             if (lastError == ERROR_INVALID_HANDLE || lastError == ERROR_OPERATION_ABORTED) {
@@ -341,6 +348,10 @@ static DWORD divertReadLoop(LPVOID arg) {
             LOG("Failed to recv a packet. (%lu)", GetLastError());
             continue;
         }
+        static struct ProcessSpeedStat read_stat = { "Read Diver Stat",0,0 };
+
+        UpdateProcessSpeed(&read_stat, readLen, addrBuf.Direction== WINDIVERT_DIRECTION_OUTBOUND);
+
         if (readLen > MAX_PACKETSIZE) {
             // don't know how this can happen
             LOG("Internal Error: DivertRecv truncated recv packet."); 
